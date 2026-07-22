@@ -1,7 +1,6 @@
 ---
 title: "Data Vis Project - Health"
-author: "Will Park 265"
-date: "2025-03-19"
+author: "WP"
 output: html_document
 ---
 
