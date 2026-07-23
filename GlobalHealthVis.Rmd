@@ -9,36 +9,32 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r life-expectancy-plot, message=FALSE, warning=FALSE}
-# Load required libraries
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-# Step 1: Load the cleaned dataset
 life_exp <- read_csv("LifeExpData.csv")
 
-# Step 2: Pivot year columns into long format
+# year columns are named "1960", "1961" etc — pivot to long so we can plot over time
 life_exp_long <- life_exp %>%
   pivot_longer(
-    cols = matches("^[0-9]{4}$"),  # Matches "1960", "1961", etc.
+    cols = matches("^[0-9]{4}$"),
     names_to = "Year",
     values_to = "Life_Expectancy"
   ) %>%
   mutate(Year = as.integer(Year))
 
-# Step 3: Find top 10 countries by average life expectancy
+# narrow down to top 10 to keep the chart readable
 top_codes <- life_exp_long %>%
   group_by(Country_Code) %>%
   summarise(avg_life = mean(Life_Expectancy, na.rm = TRUE)) %>%
   slice_max(avg_life, n = 10) %>%
   pull(Country_Code)
 
-# Step 4: Filter to only top 10 countries
 life_exp_subset <- life_exp_long %>%
   filter(Country_Code %in% top_codes)
 
-# Step 5: Plot with Country_Code as color and legend
 ggplot(life_exp_subset, aes(x = Year, y = Life_Expectancy, color = Country_Code)) +
   geom_line(size = 1, alpha = 0.8) +
   labs(
@@ -51,25 +47,22 @@ ggplot(life_exp_subset, aes(x = Year, y = Life_Expectancy, color = Country_Code)
 ```
 
 ```{r life-expectancy-heatmap, message=FALSE, warning=FALSE}
-# Load libraries
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-# Read in the dataset
 life_exp <- read_csv("LifeExpData.csv")
 
-# Pivot year columns into rows
 life_exp_long <- life_exp %>%
   pivot_longer(
-    cols = matches("^[0-9]{4}$"), 
+    cols = matches("^[0-9]{4}$"),
     names_to = "Year",
     values_to = "Life_Expectancy"
   ) %>%
   mutate(Year = as.integer(Year))
 
-# Optional: Filter down to avoid clutter (e.g., 30 countries)
+# 30 countries gives enough variety without making the heatmap unreadable
 top_countries <- life_exp_long %>%
   group_by(Country_Code) %>%
   summarise(avg_life = mean(Life_Expectancy, na.rm = TRUE)) %>%
@@ -79,7 +72,7 @@ top_countries <- life_exp_long %>%
 filtered_data <- life_exp_long %>%
   filter(Country_Code %in% top_countries)
 
-# Create the heatmap
+# plasma palette works well for life expectancy — lower values stand out clearly
 ggplot(filtered_data, aes(x = Year, y = Country_Code, fill = Life_Expectancy)) +
   geom_tile(color = "white") +
   scale_fill_viridis_c(option = "plasma", na.value = "grey90") +
@@ -92,4 +85,3 @@ ggplot(filtered_data, aes(x = Year, y = Country_Code, fill = Life_Expectancy)) +
   theme_minimal() +
   theme(axis.text.y = element_text(size = 6))
 ```
-
